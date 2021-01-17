@@ -1,4 +1,4 @@
-export function classNames(...args: any[]) {
+function classNames(...args: any[]) {
   return args
     .flatMap((x) => {
       if (x && typeof x === "object") {
@@ -10,3 +10,5 @@ export function classNames(...args: any[]) {
     .filter((x) => x)
     .join(" ")
 }
+
+export default classNames
