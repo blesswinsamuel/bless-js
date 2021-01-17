@@ -1,0 +1,56 @@
+# This workflow will run tests using node and then publish a package to GitHub Packages when a release is created
+# For more information see: https://help.github.com/actions/language-and-framework-guides/publishing-nodejs-packages
+
+name: Node.js Package
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+jobs:
+  # build:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - uses: actions/setup-node@v1
+  #       with:
+  #         node-version: 14
+  #     - run: yarn install --frozen-lockfile
+  #     - run: npm test
+
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 14
+      - run: yarn install --frozen-lockfile
+      - run: yarn build
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_REGISTRY_TOKEN}}
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+
+      - name: Slack Notification
+        uses: homoluctus/slatify@v2.1.2
+        if: always()
+        with:
+          type: ${{ job.status }}
+          job_name: "*NPM package publish* ${{github.repository}}"
+          mention: "here"
+          mention_if: "failure"
+          channel: "#github"
+          url: ${{ secrets.SLACK_WEBHOOK }}
+          commit: true
+          token: ${{ secrets.GITHUB_TOKEN }}
