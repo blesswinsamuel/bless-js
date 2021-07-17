@@ -17,5 +17,8 @@
   },
   "peerDependencies": {
     "react": "^17.0.1"
-  }
+  },
+  "files": [
+    "dist"
+  ]
 }
